@@ -1,0 +1,272 @@
+---
+
+## Comprehensive Strategic Plan
+
+### **PART 1: API Integration & Data Pipelines**
+
+#### **1.1 Strategy Parsing (Dual AI)**
+**Perplexity** (primary): Structured reasoning, financial understanding
+**Gemini** (fallback): Redundancy, different LLM perspective
+
+**API Endpoints**:
+- Perplexity: `https://api.perplexity.ai/chat/completions` (OpenAI-compatible)
+- Gemini: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent`
+
+**Prompt Engineering**:
+```
+Parse this trading strategy into structured entry/exit rules:
+"Buy when RSI crosses below 30 and MACD histogram turns positive, 
+sell when price hits 15% profit or RSI exceeds 70"
+
+Return JSON:
+{
+  "entry": { "indicators": [...], "logic": "AND/OR" },
+  "exit": { "conditions": [...], "logic": "AND/OR" },
+  "timeframe": "inferred",
+  "riskLevel": "inferred"
+}
+```
+
+#### **1.2 Real Market Data**
+**Stocks** (Alpha Vantage - Free):
+- `TIME_SERIES_DAILY` (20yr history)
+- 5 API calls/min, 500/day limit
+- Cache aggressively with React Query + AsyncStorage
+
+**Crypto** (CoinGecko - Free):
+- `/coins/{id}/market_chart` (unlimited, daily/hourly OHLCV)
+- BTC, ETH, major alts
+
+**Options** (Binance + Local Calculation):
+- Binance API for contract prices
+- Black-Scholes Greeks locally
+
+#### **1.3 Zustand Store Architecture**
+```typescript
+// stores/strategyStore.ts
+interface Strategy {
+  id: string;
+  name: string;
+  nlpInput: string;
+  parsed: ParsedStrategy; // from AI
+  asset: { type: 'stock' | 'crypto' | 'option'; symbol: string };
+  timeframe: 'daily' | 'weekly' | 'hourly';
+  capital: number;
+  createdAt: Date;
+}
+
+interface BacktestResult {
+  strategyId: string;
+  returns: number; // primary metric
+  sharpeRatio: number;
+  sortinoRatio: number;
+  calmarRatio: number;
+  maxDrawdown: number;
+  winRate: number;
+  profitFactor: number;
+  recoveryFactor: number;
+  trades: Trade[];
+  equityCurve: EquityPoint[];
+  status: 'pending' | 'running' | 'complete' | 'error';
+}
+```
+
+---
+
+### **PART 2: NLP Strategy Parsing Engine**
+
+**Multi-step parsing approach**:
+
+1. **Input Validation**: Check for common trading terms
+2. **AI Parsing**: Send to Perplexity first, fallback to Gemini
+3. **Extraction**: Pull indicators, conditions, logic operators
+4. **Validation**: Ensure parseable indicators (RSI, MACD, SMA, etc.)
+5. **Normalization**: Standardize format
+
+**Supported Indicators**:
+- Moving averages: SMA, EMA, WMA
+- Momentum: RSI, MACD, Stochastic
+- Volatility: Bollinger Bands, ATR
+- Volume: OBV, VWAP
+- Options Greeks: Delta, Gamma, Theta, Vega
+
+---
+
+### **PART 3: Production-Grade Backtest Engine**
+
+**Architecture**:
+```typescript
+class BacktestEngine {
+  // Vectorized price iteration
+  private prices: OHLCV[];
+  private positions: Position[] = [];
+  
+  async backtest(strategy: ParsedStrategy): Promise<BacktestResult> {
+    // 1. Load historical data
+    // 2. Iterate through price bars
+    // 3. Evaluate entry/exit conditions
+    // 4. Execute trades (realistic slippage, commission)
+    // 5. Calculate metrics
+    // 6. Return results
+  }
+}
+```
+
+**Key Features**:
+- **Realistic Execution**: Open, close, high, low prices for slippage
+- **Slippage Model**: % of spread, fixed points, or market impact
+- **Commission**: Fixed/percentage per trade
+- **Position Sizing**: Fixed, Kelly criterion, or risk-based
+- **Risk Management**: Stop-loss, take-profit, trailing stops
+
+**Metrics Calculation**:
+- **Returns %**: (Final Capital - Initial) / Initial * 100
+- **Sharpe Ratio**: (Return - Risk-free) / StdDev of returns
+- **Sortino Ratio**: Like Sharpe but penalizes only downside
+- **Calmar Ratio**: Return / Max Drawdown
+- **Max Drawdown**: Largest peak-to-trough decline
+- **Win Rate**: Winning trades / Total trades
+- **Profit Factor**: Gross profit / Gross loss
+- **Recovery Factor**: Net profit / Max drawdown
+
+---
+
+### **PART 4: Options & Advanced Greeks**
+
+**Black-Scholes Implementation**:
+```typescript
+function blackScholesPrice(
+  S: number, // spot price
+  K: number, // strike
+  T: number, // time to expiry (years)
+  r: number, // risk-free rate
+  sigma: number // volatility
+): { call: number; put: number } {
+  // d1, d2 calculations
+  // N(d) cumulative normal distribution
+  // return call/put prices
+}
+
+function calculateGreeks(
+  S: number, K: number, T: number, r: number, sigma: number
+): { delta: number; gamma: number; theta: number; vega: number; rho: number } {
+  // Greeks sensitivities
+}
+```
+
+**Implied Volatility Solver** (Newton-Raphson):
+- Input: Market price, S, K, T, r
+- Output: Sigma (IV)
+
+---
+
+### **PART 5: UI/UX Design**
+
+**Screen 1: Strategy Builder**
+- Text input: "Enter your strategy in natural language"
+- Asset selector: Stock / Crypto / Option + symbol
+- Timeframe picker: Daily / Weekly / Hourly
+- Capital input: Initial investment
+- Button: "Parse & Backtest"
+
+**Screen 2: Results Dashboard**
+- **Metrics Grid** (top):
+  - Returns % (large, green/red)
+  - Sharpe, Sortino, Calmar
+  - Max Drawdown, Win Rate, Profit Factor
+  
+- **Charts** (center):
+  - Equity curve (interactive)
+  - Drawdown curve
+  - Monthly returns heatmap
+  
+- **Trade List** (bottom):
+  - Entry date, price, exit date, price, P&L, %return
+
+**Screen 3: Trade Analyzer**
+- Individual trade details
+- Winners vs losers breakdown
+- Consecutive wins/losses
+- Average trade duration
+
+---
+
+## Implementation Roadmap
+
+### **Week 1: Foundations**
+1. Set up API wrappers (Perplexity, Gemini, Alpha Vantage, CoinGecko)
+2. Build Zustand stores
+3. Implement data fetching + caching layers
+4. **Code Agent builds all of this**
+
+### **Week 2: AI & NLP**
+5. Dual-AI strategy parser
+6. Indicator extraction + validation
+7. Error handling & fallbacks
+8. **Code Agent implements**
+
+### **Week 3: Backtest Engine**
+9. Vectorized OHLCV iteration
+10. Trade execution simulation
+11. Metrics calculation
+12. **Code Agent builds**
+
+### **Week 4: Options & Advanced**
+13. Black-Scholes pricing
+14. Greeks calculation
+15. IV solver
+16. **Code Agent builds**
+
+### **Week 5: UI & Polish**
+17. Strategy builder screen
+18. Results dashboard
+19. Advanced charting (Victory Native)
+20. **Code Agent builds**
+
+---
+
+## Critical Technical Decisions
+
+**1. Backtest Computation**:
+- ✅ **Web Worker** for async (prevent UI freeze)
+- Handle large datasets (10+ years of daily data)
+
+**2. API Rate Limiting**:
+- Alpha Vantage: 5/min (implement queue)
+- CoinGecko: Unlimited (batch requests)
+- Perplexity/Gemini: Reasonable limits
+
+**3. Caching Strategy**:
+- AsyncStorage: Recent backtests, parsed strategies
+- React Query: API responses, auto-refetch stale data
+
+**4. Options Data**:
+- Real: Binance API when available
+- Fallback: Synthetic IV estimation
+
+---
+
+## API Keys Needed
+
+Before we start, I need to verify you have:
+- ✅ **Perplexity API Key** (`PERPLEXITY_API_KEY`)
+- ✅ **Google Gemini API Key** (`GEMINI_API_KEY`)
+- ✅ **Alpha Vantage API Key** (`ALPHA_VANTAGE_API_KEY`)
+- ✅ **CoinGecko API Key** (optional, free tier works)
+
+---
+
+## Next Action
+
+**Ready to proceed, Michael?** I'm handing off to the Code Agent to **build everything from scratch**:
+
+1. **Complete folder structure** (services, stores, screens, utils)
+2. **All API integrations** (live, not mocks)
+3. **Zustand stores** (strategy, backtest, UI state)
+4. **NLP parser** (Perplexity + Gemini dual)
+5. **Backtest engine** (fully vectorized, production-ready)
+6. **Options Greeks** (Black-Scholes, IV solver)
+7. **UI screens** (strategy builder, dashboard, trade analyzer)
+8. **Advanced charting** (Victory Native integration)
+
+Should I **verify your API keys first**, or shall I proceed with instructions for the Code Agent?
