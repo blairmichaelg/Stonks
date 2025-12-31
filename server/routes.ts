@@ -1,16 +1,151 @@
+
 import type { Express } from "express";
-import { createServer, type Server } from "http";
+import type { Server } from "http";
 import { storage } from "./storage";
+import { api } from "@shared/routes";
+import { z } from "zod";
+import { aiService } from "./services/ai";
+import { backtestEngine } from "./services/backtest";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  
+  // === Strategy Routes ===
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  app.get(api.strategies.list.path, async (req, res) => {
+    const strategies = await storage.getStrategies();
+    res.json(strategies);
+  });
+
+  app.get(api.strategies.get.path, async (req, res) => {
+    const strategy = await storage.getStrategy(Number(req.params.id));
+    if (!strategy) {
+      return res.status(404).json({ message: "Strategy not found" });
+    }
+    res.json(strategy);
+  });
+
+  app.post(api.strategies.create.path, async (req, res) => {
+    try {
+      const input = api.strategies.create.input.parse(req.body);
+      const strategy = await storage.createStrategy(input);
+      res.status(201).json(strategy);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join("."),
+        });
+      }
+      throw err;
+    }
+  });
+
+  app.post(api.strategies.parse.path, async (req, res) => {
+    try {
+      const { prompt } = api.strategies.parse.input.parse(req.body);
+      
+      // Use the real AI service
+      const parsedStrategy = await aiService.parseStrategy(prompt);
+      
+      res.json(parsedStrategy);
+    } catch (err) {
+      console.error("AI Parse error:", err);
+      res.status(500).json({ message: "Failed to parse strategy. Please check API keys." });
+    }
+  });
+
+  // === Backtest Routes ===
+
+  app.post(api.backtests.run.path, async (req, res) => {
+    try {
+      const { strategyId } = api.backtests.run.input.parse(req.body);
+      const strategy = await storage.getStrategy(strategyId);
+      
+      if (!strategy) {
+        return res.status(404).json({ message: "Strategy not found" });
+      }
+
+      // Create a pending backtest
+      const backtest = await storage.createBacktest({
+        strategyId,
+        status: "running",
+        metrics: {},
+        equityCurve: [],
+        trades: []
+      });
+
+      // Run backtest asynchronously
+      // In a real app, this should be a job queue.
+      // We run it here but don't await the result to return response quickly.
+      runBacktestAsync(backtest.id, strategy);
+
+      res.status(201).json(backtest);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join("."),
+        });
+      }
+      throw err;
+    }
+  });
+
+  app.get(api.backtests.get.path, async (req, res) => {
+    const backtest = await storage.getBacktest(Number(req.params.id));
+    if (!backtest) {
+      return res.status(404).json({ message: "Backtest not found" });
+    }
+    res.json(backtest);
+  });
+
+  app.get(api.backtests.listByStrategy.path, async (req, res) => {
+    const backtests = await storage.getBacktestsByStrategyId(Number(req.params.strategyId));
+    res.json(backtests);
+  });
 
   return httpServer;
+}
+
+// Async wrapper for the backtest engine
+async function runBacktestAsync(backtestId: number, strategy: any) {
+  try {
+    const results = await backtestEngine.run(strategy);
+    
+    await storage.updateBacktest(backtestId, {
+      ...results,
+      status: "complete"
+    });
+  } catch (error: any) {
+    console.error("Backtest failed:", error);
+    await storage.updateBacktest(backtestId, {
+      status: "error",
+      error: error.message || "Unknown error"
+    });
+  }
+}
+
+// Seed data function (Updated to match new flow)
+export async function seedDatabase() {
+  const existing = await storage.getStrategies();
+  if (existing.length === 0) {
+    await storage.createStrategy({
+      name: "RSI Momentum Strategy",
+      description: "Classic mean reversion strategy",
+      nlpInput: "Buy when RSI < 30, Sell when RSI > 70",
+      parsedJson: {
+        entry: { indicators: [{ type: "RSI", condition: "<", value: 30 }], logic: "AND" },
+        exit: { conditions: [{ type: "RSI", condition: ">", value: 70 }], logic: "OR" },
+        timeframe: "daily",
+        riskLevel: "medium"
+      },
+      assetType: "stock",
+      symbol: "AAPL",
+      timeframe: "daily",
+      initialCapital: 10000
+    });
+  }
 }

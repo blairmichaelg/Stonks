@@ -1,38 +1,69 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
 
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import {
+  strategies,
+  backtests,
+  type Strategy,
+  type InsertStrategy,
+  type Backtest,
+  type InsertBacktest,
+} from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Strategy methods
+  createStrategy(strategy: InsertStrategy): Promise<Strategy>;
+  getStrategy(id: number): Promise<Strategy | undefined>;
+  getStrategies(): Promise<Strategy[]>;
+  
+  // Backtest methods
+  createBacktest(backtest: InsertBacktest): Promise<Backtest>;
+  getBacktest(id: number): Promise<Backtest | undefined>;
+  getBacktestsByStrategyId(strategyId: number): Promise<Backtest[]>;
+  updateBacktest(id: number, updates: Partial<Backtest>): Promise<Backtest>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async createStrategy(strategy: InsertStrategy): Promise<Strategy> {
+    const [newStrategy] = await db.insert(strategies).values(strategy).returning();
+    return newStrategy;
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getStrategy(id: number): Promise<Strategy | undefined> {
+    const [strategy] = await db.select().from(strategies).where(eq(strategies.id, id));
+    return strategy;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async getStrategies(): Promise<Strategy[]> {
+    return await db.select().from(strategies).orderBy(desc(strategies.createdAt));
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async createBacktest(backtest: InsertBacktest): Promise<Backtest> {
+    const [newBacktest] = await db.insert(backtests).values(backtest).returning();
+    return newBacktest;
+  }
+
+  async getBacktest(id: number): Promise<Backtest | undefined> {
+    const [backtest] = await db.select().from(backtests).where(eq(backtests.id, id));
+    return backtest;
+  }
+
+  async getBacktestsByStrategyId(strategyId: number): Promise<Backtest[]> {
+    return await db
+      .select()
+      .from(backtests)
+      .where(eq(backtests.strategyId, strategyId))
+      .orderBy(desc(backtests.createdAt));
+  }
+
+  async updateBacktest(id: number, updates: Partial<Backtest>): Promise<Backtest> {
+    const [updatedBacktest] = await db
+      .update(backtests)
+      .set(updates)
+      .where(eq(backtests.id, id))
+      .returning();
+    return updatedBacktest;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
