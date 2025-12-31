@@ -134,16 +134,16 @@ export async function seedDatabase() {
   if (existing.length === 0) {
     await storage.createStrategy({
       name: "RSI Momentum Strategy",
-      description: "Classic mean reversion strategy",
-      nlpInput: "Buy when RSI < 30, Sell when RSI > 70",
+      description: "Classic mean reversion strategy with profit targets and stop losses",
+      nlpInput: "Buy when RSI < 35, Sell at 10% profit or 5% loss",
       parsedJson: {
-        entry: { indicators: [{ type: "RSI", condition: "<", value: 30 }], logic: "AND" },
-        exit: { conditions: [{ type: "RSI", condition: ">", value: 70 }], logic: "OR" },
+        entry: { indicators: [{ type: "RSI", condition: "<", value: 35 }], logic: "AND" },
+        exit: { conditions: [{ type: "Profit", value: 0.10 }, { type: "Loss", value: 0.05 }], logic: "OR" },
         timeframe: "daily",
         riskLevel: "medium"
       },
       assetType: "stock",
-      symbol: "AAPL",
+      symbol: "SPY",
       timeframe: "daily",
       initialCapital: 10000
     });

@@ -1,7 +1,7 @@
 
-import { Strategy, Backtest, InsertBacktest } from "@shared/schema";
+import { Strategy, Backtest } from "@shared/schema";
 import { marketDataService, OHLCV } from "./marketData";
-import { RSI, MACD, SMA } from "technicalindicators";
+import { RSI, MACD, SMA, ATR, BollingerBands } from "technicalindicators";
 
 export class BacktestEngine {
   
@@ -32,7 +32,7 @@ export class BacktestEngine {
       status: "complete",
       metrics: {
         totalReturn,
-        sharpeRatio: this.calculateSharpeRatio(equityCurve), // Simplified
+        sharpeRatio: this.calculateSharpeRatio(equityCurve),
         maxDrawdown,
         winRate,
         profitFactor: losses.length > 0 ? (wins.reduce((a, b) => a + b.profit, 0) / Math.abs(losses.reduce((a, b) => a + b.profit, 0))) : 999,
@@ -50,28 +50,39 @@ export class BacktestEngine {
     const trades: any[] = [];
     const equityCurve: any[] = [];
 
+    // Realistic modeling
+    const commission = 0.001; // 0.1%
+    const slippage = 0.0005; // 0.05%
+
     // Pre-calculate indicators
     const closes = prices.map(p => p.close);
+    const highs = prices.map(p => p.high);
+    const lows = prices.map(p => p.low);
+
     const rsiValues = RSI.calculate({ values: closes, period: 14 });
-    const macdValues = MACD.calculate({ values: closes, fastPeriod: 12, slowPeriod: 26, signalPeriod: 9, SimpleMAOscillator: false, SimpleMASignal: false });
+    const macdValues = MACD.calculate({ 
+      values: closes, 
+      fastPeriod: 12, 
+      slowPeriod: 26, 
+      signalPeriod: 9, 
+      SimpleMAOscillator: false, 
+      SimpleMASignal: false 
+    });
     const sma20 = SMA.calculate({ values: closes, period: 20 });
     const sma50 = SMA.calculate({ values: closes, period: 50 });
+    const bbValues = BollingerBands.calculate({ values: closes, period: 20, stdDev: 2 });
     
-    // Align indicators
-    const rsiOffset = 14;
-    const macdOffset = 26;
-    const smaOffset = 50;
-    const startIdx = Math.max(rsiOffset, macdOffset, smaOffset);
+    // Alignment
+    const startIdx = Math.max(14, 26, 50, 20);
 
     for (let i = startIdx; i < prices.length; i++) {
       const price = prices[i];
-      // Get indicator values for this candle (approximate alignment)
       const rsi = rsiValues[i - 14] || 50; 
       const macd = macdValues[i - 26];
-      const smaS = sma20[i - 20];
-      const smaL = sma50[i - 50];
+      const sS = sma20[i - 20];
+      const sL = sma50[i - 50];
+      const bb = bbValues[i - 20];
       
-      // Equity tracking
       const currentEquity = capital + (position ? (price.close - position.entryPrice) * position.size : 0);
       equityCurve.push({ date: new Date(price.time).toISOString(), equity: currentEquity });
 
@@ -79,23 +90,19 @@ export class BacktestEngine {
       const entryRules = parsed.entry?.indicators || [];
       const exitRules = parsed.exit?.conditions || [];
 
-      // Check Entry
       if (!position) {
         let shouldBuy = false;
-        
-        // Evaluate Rules
-        // This is a simplified evaluator. A production one would build an expression tree.
         const ruleResults = entryRules.map((r: any) => {
            if (r.type === 'RSI') {
              if (r.condition === '<' && rsi < r.value) return true;
              if (r.condition === '>' && rsi > r.value) return true;
            }
            if (r.type === 'MACD') {
-             if (r.condition === 'positive' && macd && macd.histogram && macd.histogram > 0) return true;
-             if (r.condition === 'cross_above' && macd && macd.histogram && macd.histogram > 0 && macdValues[i-27] && macdValues[i-27].histogram && macdValues[i-27].histogram <= 0) return true;
+             if (r.condition === 'positive' && macd?.histogram > 0) return true;
+             if (r.condition === 'cross_above' && macd?.histogram > 0 && macdValues[i-27]?.histogram <= 0) return true;
            }
            if (r.type === 'SMA') {
-             if (r.condition === 'cross_above' && smaS > smaL) return true; // Golden Cross
+             if (r.condition === 'cross_above' && sS > sL && (sma20[i-21] || 0) <= (sma50[i-51] || 0)) return true;
            }
            return false;
         });
@@ -103,52 +110,54 @@ export class BacktestEngine {
         if (parsed.entry?.logic === 'OR') {
           shouldBuy = ruleResults.some((r: boolean) => r);
         } else {
-          // Default AND
           shouldBuy = ruleResults.length > 0 && ruleResults.every((r: boolean) => r);
         }
 
         if (shouldBuy) {
-          // Buy 100% equity
-          const size = capital / price.close; // Simplified, no fees
-          position = { entryPrice: price.close, size, entryTime: price.time };
-          capital -= size * price.close; // Exchange money for asset
+          const executionPrice = price.close * (1 + slippage);
+          const availableCapital = capital * (1 - commission);
+          const size = availableCapital / executionPrice;
+          position = { entryPrice: executionPrice, size, entryTime: price.time };
+          capital = 0; 
         }
-      } 
-      // Check Exit
-      else {
+      } else {
         let shouldSell = false;
         const currentProfitPct = (price.close - position.entryPrice) / position.entryPrice;
         
-        // Profit Target / Stop Loss
-        const profitRule = exitRules.find((r: any) => r.type === 'Profit');
-        if (profitRule && currentProfitPct >= profitRule.value) shouldSell = true;
+        const exitResults = exitRules.map((r: any) => {
+          if (r.type === 'Profit' && currentProfitPct >= r.value) return true;
+          if (r.type === 'Loss' && currentProfitPct <= -r.value) return true;
+          if (r.type === 'RSI' && rsi > r.value) return true;
+          return false;
+        });
 
-        const rsiRule = exitRules.find((r: any) => r.type === 'RSI');
-        if (rsiRule && rsi > rsiRule.value) shouldSell = true;
+        if (parsed.exit?.logic === 'OR') {
+          shouldSell = exitResults.length > 0 && exitResults.some((r: boolean) => r);
+        } else {
+          shouldSell = exitResults.length > 0 && exitResults.every((r: boolean) => r);
+        }
 
         if (shouldSell) {
-          const exitValue = position.size * price.close;
+          const executionPrice = price.close * (1 - slippage);
+          const exitValue = position.size * executionPrice * (1 - commission);
           const profit = exitValue - (position.size * position.entryPrice);
-          capital += exitValue;
+          capital = exitValue;
           
           trades.push({
             entryDate: new Date(position.entryTime).toISOString(),
             exitDate: new Date(price.time).toISOString(),
             entryPrice: position.entryPrice,
-            exitPrice: price.close,
+            exitPrice: executionPrice,
             profit,
-            returnPct: currentProfitPct * 100
+            returnPct: (profit / (position.size * position.entryPrice)) * 100
           });
-          
           position = null;
         }
       }
     }
 
     if (position) {
-      // Close final position
-      const finalPrice = prices[prices.length - 1].close;
-      capital += position.size * finalPrice;
+      capital += position.size * prices[prices.length - 1].close * (1 - commission);
     }
 
     return { trades, equityCurve, finalCapital: capital };
@@ -162,10 +171,9 @@ export class BacktestEngine {
     }
     const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
     const variance = returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length;
-    const stdDev = Math.sqrt(variance);
-    // Annualized Sharpe (assuming daily)
-    return stdDev === 0 ? 0 : (mean / stdDev) * Math.sqrt(252);
+    return Math.sqrt(variance) === 0 ? 0 : (mean / Math.sqrt(variance)) * Math.sqrt(252);
   }
 }
 
 export const backtestEngine = new BacktestEngine();
+

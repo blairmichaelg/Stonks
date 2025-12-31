@@ -42,13 +42,28 @@ export class AIService {
       
       Output format must be strictly JSON:
       {
-        "entry": { "indicators": [{"type": "RSI", "period": 14, "condition": "<", "value": 30}], "logic": "AND" },
-        "exit": { "conditions": [{"type": "Profit", "value": 0.05}], "logic": "OR" },
+        "entry": { 
+          "indicators": [
+            {"type": "RSI", "period": 14, "condition": "<", "value": 30},
+            {"type": "MACD", "condition": "cross_above", "value": 0},
+            {"type": "SMA", "fast": 20, "slow": 50, "condition": "cross_above"}
+          ], 
+          "logic": "AND" 
+        },
+        "exit": { 
+          "conditions": [
+            {"type": "Profit", "value": 0.15},
+            {"type": "Loss", "value": 0.05},
+            {"type": "RSI", "condition": ">", "value": 70}
+          ], 
+          "logic": "OR" 
+        },
         "timeframe": "daily",
         "riskLevel": "medium"
       }
       
-      Supported indicators: RSI, MACD, SMA, EMA, BollingerBands, Volume.
+      Supported indicators: RSI, MACD, SMA, EMA, BollingerBands.
+      Supported exit conditions: Profit (target), Loss (stop-loss), RSI.
       Supported logic: AND, OR.
     `;
 
