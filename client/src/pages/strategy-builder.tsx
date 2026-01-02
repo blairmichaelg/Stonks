@@ -31,13 +31,28 @@ export default function StrategyBuilder() {
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
+      console.log("Submitting strategy data:", data);
       const res = await apiRequest("POST", "/api/strategies", data);
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("API error response:", errorText);
+        throw new Error(errorText || "Failed to save strategy");
+      }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Strategy created successfully:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/strategies"] });
       toast({ title: "Strategy Created", description: "Your strategy is ready for backtesting." });
       setLocation("/");
+    },
+    onError: (error: Error) => {
+      console.error("Mutation error:", error);
+      toast({ 
+        title: "Creation Failed", 
+        description: error.message,
+        variant: "destructive"
+      });
     }
   });
 
