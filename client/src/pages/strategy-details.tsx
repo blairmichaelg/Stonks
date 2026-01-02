@@ -96,6 +96,7 @@ export default function StrategyDetails() {
                   <YAxis 
                     stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
+                    domain={['auto', 'auto']}
                     tickFormatter={(val) => `$${(val/1000).toFixed(1)}k`}
                   />
                   <Tooltip 
