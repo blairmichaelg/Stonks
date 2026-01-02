@@ -133,11 +133,25 @@ export default function StrategyBuilder() {
               </div>
 
               <Button 
-                type="submit" 
+                type="button" 
                 className="w-full" 
                 disabled={mutation.isPending} 
                 data-testid="button-save-strategy"
-                onClick={() => console.log("Button clicked, form state:", form.getValues())}
+                onClick={async () => {
+                  const data = form.getValues();
+                  console.log("Manual trigger with data:", data);
+                  const isValid = await form.trigger();
+                  if (isValid) {
+                    mutation.mutate(data);
+                  } else {
+                    console.error("Form validation failed:", form.formState.errors);
+                    toast({
+                      title: "Validation Error",
+                      description: "Please check the form for errors.",
+                      variant: "destructive"
+                    });
+                  }
+                }}
               >
                 {mutation.isPending ? "Generating Strategy..." : (
                   <>
