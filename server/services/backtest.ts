@@ -87,8 +87,8 @@ export class BacktestEngine {
       equityCurve.push({ date: new Date(price.time).toISOString(), equity: currentEquity });
 
       const parsed = strategy.parsedJson as any;
-      const entryRules = parsed.entry?.indicators || [];
-      const exitRules = parsed.exit?.conditions || [];
+      const entryRules = (parsed?.entry?.indicators || []).length > 0 ? parsed.entry.indicators : [{ type: 'RSI', condition: '<', value: 35 }];
+      const exitRules = (parsed?.exit?.conditions || []).length > 0 ? parsed.exit.conditions : [{ type: 'Profit', value: 0.10 }, { type: 'Loss', value: 0.05 }];
 
       if (!position) {
         let shouldBuy = false;

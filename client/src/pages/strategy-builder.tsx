@@ -70,7 +70,13 @@ export default function StrategyBuilder() {
       <Card>
         <CardContent className="pt-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((data) => mutation.mutate(data))} className="space-y-6">
+            <form onSubmit={(e) => {
+              console.log("Native form submit event triggered");
+              form.handleSubmit((data) => {
+                console.log("React Hook Form handleSubmit triggered with data:", data);
+                mutation.mutate(data);
+              })(e);
+            }} className="space-y-6">
               <FormField
                 control={form.control}
                 name="name"

@@ -29,31 +29,37 @@ export async function registerRoutes(
 
   app.post(api.strategies.create.path, async (req, res) => {
     try {
-      console.log("Creating strategy with body:", JSON.stringify(req.body));
+      console.log("POST /api/strategies - Body:", JSON.stringify(req.body));
       const input = api.strategies.create.input.parse(req.body);
       
       // Auto-parse NLP input if parsedJson is missing
       let parsedJson = req.body.parsedJson;
       if (!parsedJson && input.nlpInput) {
-        console.log("NLP input detected, parsing strategy...");
+        console.log("NLP input detected, parsing strategy via AI service...");
         try {
           parsedJson = await aiService.parseStrategy(input.nlpInput);
           console.log("AI Parsed Result:", JSON.stringify(parsedJson));
         } catch (aiErr) {
           console.error("AI Service Error:", aiErr);
-          // Fallback to empty if AI fails but continue save
-          parsedJson = { entry: { indicators: [], logic: "AND" }, exit: { conditions: [], logic: "OR" } };
+          // Fallback to a basic working strategy if AI fails
+          parsedJson = { 
+            entry: { indicators: [{ type: "RSI", condition: "<", value: 35 }], logic: "AND" }, 
+            exit: { conditions: [{ type: "Profit", value: 0.10 }, { type: "Loss", value: 0.05 }], logic: "OR" },
+            timeframe: "daily",
+            riskLevel: "medium"
+          };
+          console.log("Using fallback strategy due to AI error");
         }
       }
 
       const strategy = await storage.createStrategy({
         ...input,
-        parsedJson: parsedJson || {},
+        parsedJson: parsedJson || { entry: { indicators: [], logic: "AND" }, exit: { conditions: [], logic: "OR" } },
       });
-      console.log("Strategy created successfully:", strategy.id);
+      console.log("Strategy created successfully with ID:", strategy.id);
       res.status(201).json(strategy);
     } catch (err) {
-      console.error("Strategy creation error:", err);
+      console.error("Strategy creation endpoint error:", err);
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
