@@ -29,7 +29,7 @@ export async function registerRoutes(
 
   app.post(api.strategies.create.path, async (req, res) => {
     try {
-      console.log("POST /api/strategies - Raw Body:", req.body);
+      console.log("POST /api/strategies - Body:", JSON.stringify(req.body));
       const input = api.strategies.create.input.parse(req.body);
       
       // Auto-parse NLP input if parsedJson is missing

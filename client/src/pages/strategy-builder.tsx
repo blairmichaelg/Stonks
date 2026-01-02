@@ -36,14 +36,9 @@ export default function StrategyBuilder() {
       
       if (!res.ok) {
         let errorMessage = "Failed to save strategy";
-        try {
-          const result = await res.json();
-          errorMessage = result.message || errorMessage;
-          console.error("API error response:", result);
-        } catch (e) {
-          const text = await res.text();
-          console.error("API error text:", text);
-        }
+        const result = await res.json();
+        errorMessage = result.message || errorMessage;
+        console.error("API error response:", result);
         throw new Error(errorMessage);
       }
       
@@ -80,25 +75,17 @@ export default function StrategyBuilder() {
         <CardContent className="pt-6">
           <Form {...form}>
             <form 
-              onSubmit={async (e) => {
-                e.preventDefault();
-                console.log("Manual form submit handler triggered");
-                const data = form.getValues();
-                console.log("Form data before validation:", data);
-                
-                const isValid = await form.trigger();
-                if (isValid) {
-                  console.log("Validation passed, calling mutation...");
-                  mutation.mutate(data);
-                } else {
-                  console.error("Validation failed:", form.formState.errors);
-                  toast({
-                    title: "Validation Error",
-                    description: "Please check all required fields.",
-                    variant: "destructive"
-                  });
-                }
-              }} 
+              onSubmit={form.handleSubmit((data) => {
+                console.log("Form validated successfully. Data:", data);
+                mutation.mutate(data);
+              }, (errors) => {
+                console.error("Form validation failed. Errors:", errors);
+                toast({
+                  title: "Validation Error",
+                  description: "Please check all required fields.",
+                  variant: "destructive"
+                });
+              })}
               className="space-y-6"
             >
               <FormField
