@@ -130,7 +130,9 @@ async function runBacktestAsync(backtestId: number, strategy: any) {
 
 // Seed data function (Updated to match new flow)
 export async function seedDatabase() {
+  console.log("Seeding database...");
   const existing = await storage.getStrategies();
+  console.log(`Current strategies count: ${existing.length}`);
   if (existing.length === 0) {
     await storage.createStrategy({
       name: "RSI Momentum Strategy",
@@ -147,5 +149,9 @@ export async function seedDatabase() {
       timeframe: "daily",
       initialCapital: 10000
     });
+    console.log("Seed data created.");
   }
 }
+
+// Call seedDatabase on startup
+seedDatabase().catch(console.error);
