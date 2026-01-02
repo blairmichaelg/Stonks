@@ -29,17 +29,31 @@ export async function registerRoutes(
 
   app.post(api.strategies.create.path, async (req, res) => {
     try {
+      console.log("Creating strategy with body:", JSON.stringify(req.body));
       const input = api.strategies.create.input.parse(req.body);
-      const strategy = await storage.createStrategy(input);
+      
+      // Auto-parse NLP input if parsedJson is missing
+      let parsedJson = req.body.parsedJson;
+      if (!parsedJson && input.nlpInput) {
+        console.log("NLP input detected, parsing strategy...");
+        parsedJson = await aiService.parseStrategy(input.nlpInput);
+      }
+
+      const strategy = await storage.createStrategy({
+        ...input,
+        parsedJson: parsedJson || {},
+      });
+      console.log("Strategy created successfully:", strategy.id);
       res.status(201).json(strategy);
     } catch (err) {
+      console.error("Strategy creation error:", err);
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
           field: err.errors[0].path.join("."),
         });
       }
-      throw err;
+      res.status(500).json({ message: err instanceof Error ? err.message : "Unknown error" });
     }
   });
 

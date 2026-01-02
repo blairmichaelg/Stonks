@@ -33,12 +33,12 @@ export default function StrategyBuilder() {
     mutationFn: async (data: any) => {
       console.log("Submitting strategy data:", data);
       const res = await apiRequest("POST", "/api/strategies", data);
+      const result = await res.json();
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error("API error response:", errorText);
-        throw new Error(errorText || "Failed to save strategy");
+        console.error("API error response:", result);
+        throw new Error(result.message || "Failed to save strategy");
       }
-      return res.json();
+      return result;
     },
     onSuccess: (data) => {
       console.log("Strategy created successfully:", data);
