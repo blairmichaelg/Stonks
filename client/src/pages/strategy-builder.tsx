@@ -70,13 +70,28 @@ export default function StrategyBuilder() {
       <Card>
         <CardContent className="pt-6">
           <Form {...form}>
-            <form onSubmit={(e) => {
-              console.log("Native form submit event triggered");
-              form.handleSubmit((data) => {
-                console.log("React Hook Form handleSubmit triggered with data:", data);
-                mutation.mutate(data);
-              })(e);
-            }} className="space-y-6">
+            <form 
+              onSubmit={async (e) => {
+                e.preventDefault();
+                console.log("Manual form submit handler triggered");
+                const data = form.getValues();
+                console.log("Form data before validation:", data);
+                
+                const isValid = await form.trigger();
+                if (isValid) {
+                  console.log("Validation passed, calling mutation...");
+                  mutation.mutate(data);
+                } else {
+                  console.error("Validation failed:", form.formState.errors);
+                  toast({
+                    title: "Validation Error",
+                    description: "Please check all required fields.",
+                    variant: "destructive"
+                  });
+                }
+              }} 
+              className="space-y-6"
+            >
               <FormField
                 control={form.control}
                 name="name"
@@ -133,25 +148,10 @@ export default function StrategyBuilder() {
               </div>
 
               <Button 
-                type="button" 
+                type="submit" 
                 className="w-full" 
                 disabled={mutation.isPending} 
                 data-testid="button-save-strategy"
-                onClick={async () => {
-                  const data = form.getValues();
-                  console.log("Manual trigger with data:", data);
-                  const isValid = await form.trigger();
-                  if (isValid) {
-                    mutation.mutate(data);
-                  } else {
-                    console.error("Form validation failed:", form.formState.errors);
-                    toast({
-                      title: "Validation Error",
-                      description: "Please check the form for errors.",
-                      variant: "destructive"
-                    });
-                  }
-                }}
               >
                 {mutation.isPending ? "Generating Strategy..." : (
                   <>
