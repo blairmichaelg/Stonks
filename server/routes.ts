@@ -36,7 +36,14 @@ export async function registerRoutes(
       let parsedJson = req.body.parsedJson;
       if (!parsedJson && input.nlpInput) {
         console.log("NLP input detected, parsing strategy...");
-        parsedJson = await aiService.parseStrategy(input.nlpInput);
+        try {
+          parsedJson = await aiService.parseStrategy(input.nlpInput);
+          console.log("AI Parsed Result:", JSON.stringify(parsedJson));
+        } catch (aiErr) {
+          console.error("AI Service Error:", aiErr);
+          // Fallback to empty if AI fails but continue save
+          parsedJson = { entry: { indicators: [], logic: "AND" }, exit: { conditions: [], logic: "OR" } };
+        }
       }
 
       const strategy = await storage.createStrategy({

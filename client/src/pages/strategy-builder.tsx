@@ -126,7 +126,13 @@ export default function StrategyBuilder() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={mutation.isPending} data-testid="button-save-strategy">
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={mutation.isPending} 
+                data-testid="button-save-strategy"
+                onClick={() => console.log("Button clicked, form state:", form.getValues())}
+              >
                 {mutation.isPending ? "Generating Strategy..." : (
                   <>
                     <Wand2 className="mr-2 h-4 w-4" /> Generate & Save
