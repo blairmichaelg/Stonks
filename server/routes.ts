@@ -29,7 +29,7 @@ export async function registerRoutes(
 
   app.post(api.strategies.create.path, async (req, res) => {
     try {
-      console.log("POST /api/strategies - Body:", JSON.stringify(req.body));
+      console.log("POST /api/strategies - Raw Body:", req.body);
       const input = api.strategies.create.input.parse(req.body);
       
       // Auto-parse NLP input if parsedJson is missing
@@ -62,11 +62,11 @@ export async function registerRoutes(
       console.error("Strategy creation endpoint error:", err);
       if (err instanceof z.ZodError) {
         return res.status(400).json({
-          message: err.errors[0].message,
+          message: `Validation Error: ${err.errors[0].message} (${err.errors[0].path.join(".")})`,
           field: err.errors[0].path.join("."),
         });
       }
-      res.status(500).json({ message: err instanceof Error ? err.message : "Unknown error" });
+      res.status(500).json({ message: err instanceof Error ? err.message : "Internal Server Error" });
     }
   });
 
