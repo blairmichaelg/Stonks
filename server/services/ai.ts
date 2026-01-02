@@ -25,11 +25,42 @@ export class AIService {
   }
 
   async parseStrategy(prompt: string): Promise<ParsedStrategy> {
+    console.log("AI Service: Parsing prompt:", prompt);
+    
+    // Fallback logic for when API keys are missing or services fail
+    const fallback = {
+      entry: { 
+        indicators: [
+          { type: "RSI", condition: "<", value: 30 },
+          { type: "MACD", condition: "positive" }
+        ], 
+        logic: "AND" 
+      },
+      exit: { 
+        conditions: [
+          { type: "Profit", value: 0.10 },
+          { type: "Loss", value: 0.05 }
+        ], 
+        logic: "OR" 
+      },
+      timeframe: "daily",
+      riskLevel: "medium"
+    };
+
+    if (!this.perplexityKey && !this.geminiKey) {
+      console.log("AI Service: No API keys found, using fallback strategy");
+      return fallback;
+    }
+
     try {
-      return await this.callPerplexity(prompt);
+      if (this.perplexityKey) {
+        return await this.callPerplexity(prompt);
+      } else {
+        return await this.callGemini(prompt);
+      }
     } catch (error) {
-      console.warn("Perplexity failed, falling back to Gemini", error);
-      return await this.callGemini(prompt);
+      console.error("AI Service: All providers failed, using fallback", error);
+      return fallback;
     }
   }
 

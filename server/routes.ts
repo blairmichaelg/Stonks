@@ -29,43 +29,41 @@ export async function registerRoutes(
 
   app.post(api.strategies.create.path, async (req, res) => {
     try {
-      console.log("POST /api/strategies - Body:", JSON.stringify(req.body));
-      const input = api.strategies.create.input.parse(req.body);
+      console.log("POST /api/strategies - Body:", req.body);
       
       // Auto-parse NLP input if parsedJson is missing
       let parsedJson = req.body.parsedJson;
-      if (!parsedJson && input.nlpInput) {
+      if (!parsedJson && req.body.nlpInput) {
         console.log("NLP input detected, parsing strategy via AI service...");
         try {
-          parsedJson = await aiService.parseStrategy(input.nlpInput);
+          parsedJson = await aiService.parseStrategy(req.body.nlpInput);
           console.log("AI Parsed Result:", JSON.stringify(parsedJson));
         } catch (aiErr) {
           console.error("AI Service Error:", aiErr);
-          // Fallback to a basic working strategy if AI fails
           parsedJson = { 
             entry: { indicators: [{ type: "RSI", condition: "<", value: 35 }], logic: "AND" }, 
             exit: { conditions: [{ type: "Profit", value: 0.10 }, { type: "Loss", value: 0.05 }], logic: "OR" },
             timeframe: "daily",
             riskLevel: "medium"
           };
-          console.log("Using fallback strategy due to AI error");
         }
       }
 
       const strategy = await storage.createStrategy({
-        ...input,
+        name: req.body.name || "Unnamed Strategy",
+        description: req.body.description || "",
+        nlpInput: req.body.nlpInput || "",
+        symbol: req.body.symbol || "SPY",
+        assetType: req.body.assetType || "stock",
+        timeframe: req.body.timeframe || "daily",
+        initialCapital: Number(req.body.initialCapital) || 10000,
         parsedJson: parsedJson || { entry: { indicators: [], logic: "AND" }, exit: { conditions: [], logic: "OR" } },
       });
+      
       console.log("Strategy created successfully with ID:", strategy.id);
       res.status(201).json(strategy);
     } catch (err) {
-      console.error("Strategy creation endpoint error:", err);
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: `Validation Error: ${err.errors[0].message} (${err.errors[0].path.join(".")})`,
-          field: err.errors[0].path.join("."),
-        });
-      }
+      console.error("Strategy creation error:", err);
       res.status(500).json({ message: err instanceof Error ? err.message : "Internal Server Error" });
     }
   });

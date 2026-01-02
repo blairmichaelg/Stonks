@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertStrategySchema } from "@shared/schema";
+import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wand2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+// Specific schema for the form to avoid validation issues with hidden fields
+const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  nlpInput: z.string().min(1, "Description is required"),
+  symbol: z.string().min(1, "Symbol is required"),
+  assetType: z.string().default("stock"),
+  timeframe: z.string().default("daily"),
+  initialCapital: z.number().min(1, "Initial capital must be positive")
+});
+
 export default function StrategyBuilder() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
   const form = useForm({
-    resolver: zodResolver(insertStrategySchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -38,14 +49,12 @@ export default function StrategyBuilder() {
         let errorMessage = "Failed to save strategy";
         const result = await res.json();
         errorMessage = result.message || errorMessage;
-        console.error("API error response:", result);
         throw new Error(errorMessage);
       }
       
       return res.json();
     },
     onSuccess: (data) => {
-      console.log("Strategy created successfully:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/strategies"] });
       toast({ title: "Strategy Created", description: "Your strategy is ready for backtesting." });
       setLocation("/");
@@ -76,16 +85,10 @@ export default function StrategyBuilder() {
           <Form {...form}>
             <form 
               onSubmit={form.handleSubmit((data) => {
-                console.log("Form validated successfully. Data:", data);
                 mutation.mutate(data);
               }, (errors) => {
-                console.error("Form validation failed. Errors:", errors);
-                toast({
-                  title: "Validation Error",
-                  description: "Please check all required fields.",
-                  variant: "destructive"
-                });
-              })}
+                console.error("Form errors:", errors);
+              })} 
               className="space-y-6"
             >
               <FormField
@@ -146,7 +149,7 @@ export default function StrategyBuilder() {
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={mutation.isPending} 
+                disabled={mutation.isPending}
                 data-testid="button-save-strategy"
               >
                 {mutation.isPending ? "Generating Strategy..." : (
