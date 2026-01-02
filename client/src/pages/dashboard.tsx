@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Strategy } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { Play, Plus, Activity } from "lucide-react";
+import { Play, Plus, Activity, TrendingUp } from "lucide-react";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
