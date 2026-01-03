@@ -18,6 +18,34 @@ export const strategies = pgTable("strategies", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const aiAgents = pgTable("ai_agents", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'risk', 'execution', 'compliance'
+  status: text("status").notNull(), // 'active', 'idle', 'warning'
+  riskScore: integer("risk_score").notNull().default(0),
+  lastAction: text("last_action"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const complianceLogs = pgTable("compliance_logs", {
+  id: serial("id").primaryKey(),
+  regulation: text("regulation").notNull(), // 'DORA', 'MiCA', 'GDPR'
+  severity: text("severity").notNull(), // 'low', 'medium', 'high', 'critical'
+  message: text("message").notNull(),
+  timestamp: timestamp("timestamp").defaultNow(),
+  metadata: jsonb("metadata"),
+});
+
+export const securityThreats = pgTable("security_threats", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // 'phishing', 'deepfake', 'lateral_movement'
+  source: text("source").notNull(),
+  status: text("status").notNull(), // 'blocked', 'investigating', 'remediated'
+  detectedAt: timestamp("detected_at").defaultNow(),
+});
+
 export const backtests = pgTable("backtests", {
   id: serial("id").primaryKey(),
   strategyId: integer("strategy_id").references(() => strategies.id).notNull(),
@@ -37,6 +65,21 @@ export const insertStrategySchema = createInsertSchema(strategies).omit({
   createdAt: true 
 });
 
+export const insertAiAgentSchema = createInsertSchema(aiAgents).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export const insertComplianceLogSchema = createInsertSchema(complianceLogs).omit({ 
+  id: true, 
+  timestamp: true 
+});
+
+export const insertSecurityThreatSchema = createInsertSchema(securityThreats).omit({ 
+  id: true, 
+  detectedAt: true 
+});
+
 export const insertBacktestSchema = createInsertSchema(backtests).omit({ 
   id: true, 
   createdAt: true,
@@ -47,6 +90,15 @@ export const insertBacktestSchema = createInsertSchema(backtests).omit({
 
 export type Strategy = typeof strategies.$inferSelect;
 export type InsertStrategy = z.infer<typeof insertStrategySchema>;
+
+export type AiAgent = typeof aiAgents.$inferSelect;
+export type InsertAiAgent = z.infer<typeof insertAiAgentSchema>;
+
+export type ComplianceLog = typeof complianceLogs.$inferSelect;
+export type InsertComplianceLog = z.infer<typeof insertComplianceLogSchema>;
+
+export type SecurityThreat = typeof securityThreats.$inferSelect;
+export type InsertSecurityThreat = z.infer<typeof insertSecurityThreatSchema>;
 
 export type Backtest = typeof backtests.$inferSelect;
 export type InsertBacktest = z.infer<typeof insertBacktestSchema>;

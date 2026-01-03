@@ -3,10 +3,19 @@ import { db } from "./db";
 import {
   strategies,
   backtests,
+  aiAgents,
+  complianceLogs,
+  securityThreats,
   type Strategy,
   type InsertStrategy,
   type Backtest,
   type InsertBacktest,
+  type AiAgent,
+  type InsertAiAgent,
+  type ComplianceLog,
+  type InsertComplianceLog,
+  type SecurityThreat,
+  type InsertSecurityThreat,
 } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 
@@ -21,6 +30,18 @@ export interface IStorage {
   getBacktest(id: number): Promise<Backtest | undefined>;
   getBacktestsByStrategyId(strategyId: number): Promise<Backtest[]>;
   updateBacktest(id: number, updates: Partial<Backtest>): Promise<Backtest>;
+
+  // AI Agent methods
+  getAiAgents(): Promise<AiAgent[]>;
+  createAiAgent(agent: InsertAiAgent): Promise<AiAgent>;
+
+  // Compliance methods
+  getComplianceLogs(): Promise<ComplianceLog[]>;
+  createComplianceLog(log: InsertComplianceLog): Promise<ComplianceLog>;
+
+  // Security methods
+  getSecurityThreats(): Promise<SecurityThreat[]>;
+  createSecurityThreat(threat: InsertSecurityThreat): Promise<SecurityThreat>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -63,6 +84,33 @@ export class DatabaseStorage implements IStorage {
       .where(eq(backtests.id, id))
       .returning();
     return updatedBacktest;
+  }
+
+  async getAiAgents(): Promise<AiAgent[]> {
+    return await db.select().from(aiAgents).orderBy(desc(aiAgents.createdAt));
+  }
+
+  async createAiAgent(agent: InsertAiAgent): Promise<AiAgent> {
+    const [newAgent] = await db.insert(aiAgents).values(agent).returning();
+    return newAgent;
+  }
+
+  async getComplianceLogs(): Promise<ComplianceLog[]> {
+    return await db.select().from(complianceLogs).orderBy(desc(complianceLogs.timestamp));
+  }
+
+  async createComplianceLog(log: InsertComplianceLog): Promise<ComplianceLog> {
+    const [newLog] = await db.insert(complianceLogs).values(log).returning();
+    return newLog;
+  }
+
+  async getSecurityThreats(): Promise<SecurityThreat[]> {
+    return await db.select().from(securityThreats).orderBy(desc(securityThreats.detectedAt));
+  }
+
+  async createSecurityThreat(threat: InsertSecurityThreat): Promise<SecurityThreat> {
+    const [newThreat] = await db.insert(securityThreats).values(threat).returning();
+    return newThreat;
   }
 }
 

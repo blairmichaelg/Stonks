@@ -6,6 +6,7 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { aiService } from "./services/ai";
 import { backtestEngine } from "./services/backtest";
+import { insertAiAgentSchema, insertComplianceLogSchema, insertSecurityThreatSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -130,6 +131,43 @@ export async function registerRoutes(
   app.get(api.backtests.listByStrategy.path, async (req, res) => {
     const backtests = await storage.getBacktestsByStrategyId(Number(req.params.strategyId));
     res.json(backtests);
+  });
+
+  // === Institutional Ecosystem Routes ===
+  app.get("/api/ai-agents", async (_req, res) => {
+    const agents = await storage.getAiAgents();
+    res.json(agents);
+  });
+
+  app.post("/api/ai-agents", async (req, res) => {
+    const parsed = insertAiAgentSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error });
+    const agent = await storage.createAiAgent(parsed.data);
+    res.json(agent);
+  });
+
+  app.get("/api/compliance-logs", async (_req, res) => {
+    const logs = await storage.getComplianceLogs();
+    res.json(logs);
+  });
+
+  app.post("/api/compliance-logs", async (req, res) => {
+    const parsed = insertComplianceLogSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error });
+    const log = await storage.createComplianceLog(parsed.data);
+    res.json(log);
+  });
+
+  app.get("/api/security-threats", async (_req, res) => {
+    const threats = await storage.getSecurityThreats();
+    res.json(threats);
+  });
+
+  app.post("/api/security-threats", async (req, res) => {
+    const parsed = insertSecurityThreatSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error });
+    const threat = await storage.createSecurityThreat(parsed.data);
+    res.json(threat);
   });
 
   return httpServer;
