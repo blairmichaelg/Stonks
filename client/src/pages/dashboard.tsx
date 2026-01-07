@@ -93,18 +93,31 @@ export default function Dashboard() {
              <div className="absolute inset-0 opacity-20 pointer-events-none" 
                   style={{ backgroundImage: 'radial-gradient(circle at 20% 30%, #3b82f6 0%, transparent 50%), radial-gradient(circle at 80% 70%, #8b5cf6 0%, transparent 50%)' }} 
              />
-             <div className="text-center z-10">
-               <div className="text-muted-foreground text-sm font-mono mb-2">HINDSIGHT OVERLAY ACTIVE</div>
-               <div className="flex items-center justify-center gap-4">
-                 <div className="text-xs font-mono text-emerald-400">LIQUIDITY DEPTH: +142.5M</div>
-                 <div className="text-xs font-mono text-amber-400">REJECTION ZONES: 3 Identified</div>
+             <div className="text-center z-10 w-full px-12">
+               <div className="flex justify-between items-end mb-8 w-full">
+                 <div className="space-y-1 text-left">
+                   <div className="text-[10px] font-mono text-primary uppercase tracking-tighter opacity-50">Liquidity Velocity</div>
+                   <div className="text-2xl font-bold font-mono text-white">1,429.52</div>
+                 </div>
+                 <div className="h-16 w-32 flex items-end gap-1">
+                   {[40, 70, 45, 90, 65, 80, 50, 85].map((h, i) => (
+                     <div key={i} className="flex-1 bg-primary/40 rounded-t-sm animate-pulse" style={{ height: `${h}%`, animationDelay: `${i * 100}ms` }} />
+                   ))}
+                 </div>
+               </div>
+               <div className="text-muted-foreground text-sm font-mono mb-2 tracking-[0.2em] animate-pulse">HINDSIGHT OVERLAY ACTIVE</div>
+               <div className="flex items-center justify-center gap-4 border-t border-white/5 pt-4">
+                 <div className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Depth: +142.5M</div>
+                 <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">Rejection: 3 Nodes</div>
                </div>
              </div>
              {/* DNA Fingerprints Column */}
-             <div className="absolute right-0 top-0 bottom-0 w-16 border-l border-border/50 bg-background/40 flex flex-col items-center py-4 gap-4">
-               {[1,2,3,4,5].map(i => (
-                 <div key={i} className="w-8 h-8 rounded bg-primary/20 border border-primary/30 flex items-center justify-center" title="Trade DNA Fingerprint">
-                   <div className="w-4 h-1 bg-primary/60 rounded-full" />
+             <div className="absolute right-0 top-0 bottom-0 w-16 border-l border-border/50 bg-background/40 flex flex-col items-center py-4 gap-4 overflow-hidden">
+               {[1,2,3,4,5,6,7,8].map(i => (
+                 <div key={i} className="w-10 h-6 relative group cursor-help shrink-0" title="Trade DNA Fingerprint">
+                   <div className="absolute inset-0 bg-primary/10 rounded-sm border border-primary/20 group-hover:bg-primary/30 transition-colors" />
+                   <div className="dna-fingerprint absolute bottom-1 left-1 right-1" />
+                   <div className="absolute top-1 left-1 w-1 h-1 rounded-full bg-emerald-500" />
                  </div>
                ))}
              </div>
