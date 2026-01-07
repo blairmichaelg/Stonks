@@ -195,7 +195,6 @@ async function runBacktestAsync(backtestId: number, strategy: any) {
 export async function seedDatabase() {
   console.log("Seeding database...");
   const existing = await storage.getStrategies();
-  console.log(`Current strategies count: ${existing.length}`);
   if (existing.length === 0) {
     await storage.createStrategy({
       name: "RSI Momentum Strategy",
@@ -212,8 +211,53 @@ export async function seedDatabase() {
       timeframe: "daily",
       initialCapital: 10000
     });
-    console.log("Seed data created.");
   }
+
+  const existingAgents = await storage.getAiAgents();
+  if (existingAgents.length === 0) {
+    await storage.createAiAgent({
+      name: "Risk Guardian",
+      type: "risk",
+      status: "active",
+      riskScore: 12,
+      lastAction: "Adjusted max drawdown limits for volatility spike",
+      metadata: {}
+    });
+    await storage.createAiAgent({
+      name: "Execution Mesh Node",
+      type: "execution",
+      status: "active",
+      riskScore: 5,
+      lastAction: "RDMA tunnel established to NYSE colocation",
+      metadata: {}
+    });
+  }
+
+  const existingCompliance = await storage.getComplianceLogs();
+  if (existingCompliance.length === 0) {
+    await storage.createComplianceLog({
+      regulation: "DORA",
+      severity: "low",
+      message: "Continuous resilience testing completed for Q1",
+      metadata: {}
+    });
+    await storage.createComplianceLog({
+      regulation: "MiCA",
+      severity: "medium",
+      message: "Stablecoin reserve attestation verified on-chain",
+      metadata: {}
+    });
+  }
+
+  const existingThreats = await storage.getSecurityThreats();
+  if (existingThreats.length === 0) {
+    await storage.createSecurityThreat({
+      type: "Lateral Movement Attempt",
+      source: "Suspicious API Node (IP: 192.168.1.45)",
+      status: "blocked"
+    });
+  }
+  console.log("Institutional Seed data created.");
 }
 
 // Call seedDatabase on startup
