@@ -28,7 +28,7 @@ export default function Dashboard() {
 
   const runBacktestMutation = useMutation({
     mutationFn: async (strategyId: number) => {
-      const res = await apiRequest("POST", `/api/strategies/${strategyId}/backtest`);
+      const res = await apiRequest("POST", "/api/backtests/run", { strategyId });
       return res.json();
     },
     onSuccess: (data, variables) => {
