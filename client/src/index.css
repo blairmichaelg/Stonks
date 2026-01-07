@@ -67,6 +67,22 @@
 }
 
 @layer utilities {
+  .hover-elevate {
+    @apply transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-primary/10 hover:border-primary/50;
+  }
+
+  .active-elevate-2 {
+    @apply transition-all duration-150 active:translate-y-[1px] active:shadow-sm;
+  }
+
+  .dna-fingerprint {
+    background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.2) 50%, transparent 100%);
+    height: 2px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
   .text-mono {
     font-family: var(--font-mono);
   }
@@ -82,4 +98,20 @@
   .text-gradient-primary {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60;
   }
+}
+
+@keyframes dna-flow {
+  from { left: -100%; }
+  to { left: 100%; }
+}
+
+.dna-fingerprint::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent);
+  animation: dna-flow 2s infinite linear;
 }
