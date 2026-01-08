@@ -83,7 +83,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 Market Microstructure Heatmap
               </CardTitle>
-              <CardDescription className="text-[10px] text-muted-foreground/50 font-mono mt-1 uppercase tracking-widest">Realtime_Liquidity_Mesh_V3 // Node: MESH-ALPHA-01</CardDescription>
+              <CardDescription className="text-[10px] text-muted-foreground/50 font-mono mt-1 uppercase tracking-widest">Realtime_Liquidity_Mesh_V4 // Node: MESH-ALPHA-01</CardDescription>
             </div>
             <div className="flex gap-2">
               <Badge variant="outline" className="text-[9px] border-emerald-500/30 text-emerald-500 bg-emerald-500/5 uppercase tracking-tighter shadow-sm shadow-emerald-500/10">RDMA_SYNC</Badge>
@@ -95,7 +95,7 @@ export default function Dashboard() {
               {Array.from({ length: 60 }).map((_, i) => (
                 <div 
                   key={i} 
-                  className="aspect-square rounded-[1px] relative overflow-hidden transition-all duration-500 hover:scale-125 hover:z-10 cursor-help border border-white/5 shadow-inner"
+                  className="aspect-square rounded-[1px] relative overflow-hidden transition-all duration-700 hover:scale-125 hover:z-10 cursor-help border border-white/5 shadow-inner"
                   style={{ 
                     backgroundColor: i % 7 === 0 ? 'hsl(var(--primary) / 0.9)' : 
                                    i % 5 === 0 ? 'hsl(var(--primary) / 0.5)' : 
@@ -106,6 +106,10 @@ export default function Dashboard() {
                   <div className="absolute inset-0 dna-fingerprint opacity-30 animate-pulse" />
                   {i % 8 === 0 && <div className="absolute inset-0 bg-primary/20 animate-pulse" style={{ animationDuration: '3s' }} />}
                   {i % 12 === 0 && <div className="absolute top-1 left-1 w-1 h-1 rounded-full bg-emerald-500 animate-ping" />}
+                  {/* Microstructure Details on Cell */}
+                  <div className="absolute bottom-0 right-0 p-[1px] opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-[2px] h-[2px] bg-white/40" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -124,8 +128,11 @@ export default function Dashboard() {
                   <div className="text-sm font-bold text-white font-mono">1,429.5 m/s</div>
                 </div>
               </div>
-              <div className="h-10 px-4 bg-primary/10 rounded border border-primary/30 flex items-center justify-center group-hover:bg-primary/20 transition-all shadow-lg shadow-primary/10">
-                <span className="text-[10px] font-mono text-primary uppercase animate-pulse tracking-[0.2em] font-bold">Scanning Delta Gradients...</span>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="bg-white/5 text-[9px] font-mono uppercase text-muted-foreground border-white/10">Hindsight_Active</Badge>
+                <div className="h-10 px-4 bg-primary/10 rounded border border-primary/30 flex items-center justify-center group-hover:bg-primary/20 transition-all shadow-lg shadow-primary/10">
+                  <span className="text-[10px] font-mono text-primary uppercase animate-pulse tracking-[0.2em] font-bold">Scanning Delta Gradients...</span>
+                </div>
               </div>
             </div>
           </CardContent>
