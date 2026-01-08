@@ -168,7 +168,7 @@ export default function Dashboard() {
                   <div className="grid grid-cols-2 gap-3 border-y border-border py-3">
                     <div className="space-y-1">
                       <div className="text-xs text-muted-foreground">Risk Level</div>
-                      <div className="text-sm font-medium text-white">{strategy.parsedJson?.riskLevel || 'Medium'}</div>
+                      <div className="text-sm font-medium text-white">{(strategy.parsedJson as any)?.riskLevel || 'Medium'}</div>
                     </div>
                     <div className="space-y-1 text-right">
                       <div className="text-xs text-muted-foreground">Timeframe</div>

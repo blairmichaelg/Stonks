@@ -75,8 +75,8 @@ export default function StrategyDetails() {
                 <CardTitle className="text-sm text-muted-foreground">Total Return</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${Number(latestBacktest?.metrics?.totalReturn || 0) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                  {latestBacktest ? `${Number(latestBacktest.metrics.totalReturn).toFixed(2)}%` : '---'}
+                <div className={`text-2xl font-bold ${Number((latestBacktest?.metrics as any)?.totalReturn || 0) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {latestBacktest ? `${Number((latestBacktest.metrics as any).totalReturn).toFixed(2)}%` : '---'}
                 </div>
               </CardContent>
             </Card>
@@ -86,7 +86,7 @@ export default function StrategyDetails() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {latestBacktest ? `${Number(latestBacktest.metrics.winRate).toFixed(1)}%` : '---'}
+                  {latestBacktest ? `${Number((latestBacktest.metrics as any).winRate).toFixed(1)}%` : '---'}
                 </div>
               </CardContent>
             </Card>
@@ -96,7 +96,7 @@ export default function StrategyDetails() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-rose-500">
-                  {latestBacktest ? `-${Number(latestBacktest.metrics.maxDrawdown).toFixed(2)}%` : '---'}
+                  {latestBacktest ? `-${Number((latestBacktest.metrics as any).maxDrawdown).toFixed(2)}%` : '---'}
                 </div>
               </CardContent>
             </Card>
@@ -115,7 +115,7 @@ export default function StrategyDetails() {
             <CardContent className="h-[450px] p-0 pt-8">
               {latestBacktest ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={latestBacktest.equityCurve}>
+                  <AreaChart data={(latestBacktest.equityCurve as any) || []}>
                     <defs>
                       <linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
@@ -183,7 +183,7 @@ export default function StrategyDetails() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Risk Level</span>
-                <Badge>{strategy.parsedJson?.riskLevel || 'Medium'}</Badge>
+                <Badge>{(strategy.parsedJson as any)?.riskLevel || 'Medium'}</Badge>
               </div>
             </CardContent>
           </Card>
@@ -196,15 +196,15 @@ export default function StrategyDetails() {
               <CardContent className="pt-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Sharpe Ratio</span>
-                  <span className="text-sm font-medium">{Number(latestBacktest.metrics.sharpeRatio || 0).toFixed(2)}</span>
+                  <span className="text-sm font-medium">{Number((latestBacktest.metrics as any).sharpeRatio || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Total Trades</span>
-                  <span className="text-sm font-medium">{latestBacktest.metrics.totalTrades || 0}</span>
+                  <span className="text-sm font-medium">{(latestBacktest.metrics as any).totalTrades || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Profit Factor</span>
-                  <span className="text-sm font-medium">{Number(latestBacktest.metrics.profitFactor || 0).toFixed(2)}</span>
+                  <span className="text-sm font-medium">{Number((latestBacktest.metrics as any).profitFactor || 0).toFixed(2)}</span>
                 </div>
               </CardContent>
             </Card>
