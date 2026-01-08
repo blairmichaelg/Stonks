@@ -75,19 +75,67 @@ export default function Dashboard() {
       {/* Main Grid */}
       <div className="grid grid-cols-12 gap-6">
         
+        {/* Quantum-Safe Order Routing */}
+        <Card className="col-span-12 lg:col-span-12 bg-card/50 border-border/50 shadow-2xl shadow-black/40 overflow-hidden group">
+          <CardHeader className="flex flex-row items-center justify-between pb-4 bg-black/20 border-b border-white/5">
+            <div>
+              <CardTitle className="text-sm font-mono uppercase tracking-[0.2em] text-white flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-primary animate-spin-slow" />
+                Quantum-Safe Order Routing Nexus
+              </CardTitle>
+              <CardDescription className="text-[10px] text-muted-foreground/50 font-mono mt-1 uppercase tracking-widest">LATTICE_KEM_V8 // SYNC_STATUS: ATOMIC_CLOCK_LOCKED</CardDescription>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-tighter">Routing Latency</span>
+                <span className="text-xs font-mono font-bold text-emerald-500 tracking-tighter">0.12μs P99</span>
+              </div>
+              <Badge variant="outline" className="text-[9px] border-primary/30 text-primary bg-primary/5 uppercase tracking-tighter">QS_ENCRYPTED</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="h-24 w-full bg-black/40 relative flex items-center px-8 gap-8 overflow-hidden">
+              <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(90deg, transparent 0%, hsl(var(--primary)) 50%, transparent 100%)', backgroundSize: '200% 100%', animation: 'shimmer 4s infinite linear' }} />
+              
+              <div className="flex-1 flex justify-around items-center relative">
+                {['NYSE_DRK', 'IEX_CLOUD', 'COINBASE_PRO', 'BINANCE_US'].map((node, i) => (
+                  <div key={node} className="flex flex-col items-center gap-2 group cursor-pointer relative z-10">
+                    <div className="w-10 h-10 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center group-hover:border-primary/50 transition-all shadow-lg group-hover:shadow-primary/20">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    </div>
+                    <span className="text-[9px] font-mono text-white/40 group-hover:text-white transition-colors">{node}</span>
+                    {i < 3 && <div className="absolute left-[100%] top-5 w-[calc(25vw-80px)] h-[1px] bg-gradient-to-r from-emerald-500/50 to-primary/50 opacity-20" />}
+                  </div>
+                ))}
+              </div>
+
+              <div className="w-48 border-l border-white/5 px-6 flex flex-col justify-center">
+                <div className="text-[8px] font-mono text-muted-foreground uppercase mb-1">Active Tunnels</div>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="w-1 h-3 bg-primary/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Market Microstructure Heatmap */}
         <Card className="col-span-12 lg:col-span-8 bg-card/50 border-border/50 shadow-2xl shadow-black/40 overflow-hidden group">
           <CardHeader className="flex flex-row items-center justify-between pb-4 bg-black/20 border-b border-white/5">
             <div>
               <CardTitle className="text-sm font-mono uppercase tracking-[0.2em] text-white flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                Market Microstructure Heatmap
+                Cross-Asset Liquidity Nexus
               </CardTitle>
-              <CardDescription className="text-[10px] text-muted-foreground/50 font-mono mt-1 uppercase tracking-widest">Realtime_Liquidity_Mesh_V4 // Node: MESH-ALPHA-01</CardDescription>
+              <CardDescription className="text-[10px] text-muted-foreground/50 font-mono mt-1 uppercase tracking-widest">Aggregate_Depth_V5 // Markets: [STOCKS, CRYPTO]</CardDescription>
             </div>
             <div className="flex gap-2">
-              <Badge variant="outline" className="text-[9px] border-emerald-500/30 text-emerald-500 bg-emerald-500/5 uppercase tracking-tighter shadow-sm shadow-emerald-500/10">RDMA_SYNC</Badge>
-              <Badge variant="outline" className="text-[9px] border-primary/30 text-primary bg-primary/5 uppercase tracking-tighter shadow-sm shadow-primary/10">0.8μs_LATENCY</Badge>
+              <Badge variant="outline" className="text-[9px] border-emerald-500/30 text-emerald-500 bg-emerald-500/5 uppercase tracking-tighter shadow-sm shadow-emerald-500/10">LIVE_DATA</Badge>
+              <Badge variant="outline" className="text-[9px] border-primary/30 text-primary bg-primary/5 uppercase tracking-tighter shadow-sm shadow-primary/10">0.8μs_SYNC</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-6 bg-black/10">
@@ -97,56 +145,49 @@ export default function Dashboard() {
                   key={i} 
                   className="aspect-square rounded-[1px] relative overflow-hidden transition-all duration-700 hover:scale-125 hover:z-10 cursor-help border border-white/5 shadow-inner"
                   style={{ 
-                    backgroundColor: i % 7 === 0 ? 'hsl(var(--primary) / 0.9)' : 
-                                   i % 5 === 0 ? 'hsl(var(--primary) / 0.5)' : 
-                                   i % 3 === 0 ? 'rgba(255,255,255,0.08)' : 'transparent',
+                    backgroundColor: i < 30 ? (i % 7 === 0 ? 'hsl(var(--primary) / 0.9)' : i % 5 === 0 ? 'hsl(var(--primary) / 0.5)' : 'transparent') : 
+                                   (i % 6 === 0 ? 'hsl(142 71% 45% / 0.6)' : i % 4 === 0 ? 'hsl(142 71% 45% / 0.3)' : 'transparent'),
                     animationDelay: `${i * 50}ms`
                   }}
                 >
                   <div className="absolute inset-0 dna-fingerprint opacity-30 animate-pulse" />
-                  {i % 8 === 0 && <div className="absolute inset-0 bg-primary/20 animate-pulse" style={{ animationDuration: '3s' }} />}
-                  {i % 12 === 0 && <div className="absolute top-1 left-1 w-1 h-1 rounded-full bg-emerald-500 animate-ping" />}
-                  {/* Microstructure Details on Cell */}
-                  <div className="absolute bottom-0 right-0 p-[1px] opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-[2px] h-[2px] bg-white/40" />
-                  </div>
+                  {i % 12 === 0 && <div className={`absolute top-1 left-1 w-1 h-1 rounded-full ${i < 30 ? 'bg-primary' : 'bg-emerald-500'} animate-ping`} />}
                 </div>
               ))}
             </div>
             <div className="mt-6 flex flex-col md:flex-row justify-between items-center gap-4 px-1">
               <div className="flex gap-6">
                 <div className="space-y-1">
-                  <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Orderbook Density</div>
-                  <div className="text-sm font-bold text-white font-mono">98.42% <span className="text-emerald-500 text-[10px] ml-1">↑ 1.2%</span></div>
+                  <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Aggregate Depth</div>
+                  <div className="text-sm font-bold text-white font-mono">$1.42B <span className="text-emerald-500 text-[10px] ml-1">↑ 0.4%</span></div>
                 </div>
                 <div className="space-y-1 border-l border-white/10 pl-6">
-                  <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Slippage Tolerance</div>
-                  <div className="text-sm font-bold text-white font-mono">0.0024 bps</div>
+                  <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Imbalance Ratio</div>
+                  <div className="text-sm font-bold text-white font-mono">1.04:1 [BUY]</div>
                 </div>
                 <div className="space-y-1 border-l border-white/10 pl-6">
-                  <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Liquidity Velocity</div>
-                  <div className="text-sm font-bold text-white font-mono">1,429.5 m/s</div>
+                  <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">HFT Correlation</div>
+                  <div className="text-sm font-bold text-white font-mono">0.982 ρ</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="bg-white/5 text-[9px] font-mono uppercase text-muted-foreground border-white/10">Hindsight_Active</Badge>
                 <div className="h-10 px-4 bg-primary/10 rounded border border-primary/30 flex items-center justify-center group-hover:bg-primary/20 transition-all shadow-lg shadow-primary/10">
-                  <span className="text-[10px] font-mono text-primary uppercase animate-pulse tracking-[0.2em] font-bold">Scanning Delta Gradients...</span>
+                  <span className="text-[10px] font-mono text-primary uppercase animate-pulse tracking-[0.2em] font-bold">Nexus Gradient Active</span>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Agentic Mesh Status */}
+        {/* Sovereign Node Mesh */}
         <Card className="col-span-12 lg:col-span-4 bg-card/50 border-border/50 shadow-2xl shadow-black/40 flex flex-col">
           <CardHeader className="bg-black/20 border-b border-white/5 pb-4">
             <CardTitle className="text-sm font-mono uppercase tracking-[0.2em] text-white flex items-center gap-2">
               <Cpu className="w-4 h-4 text-primary" />
-              Agentic Mesh Cluster
+              Sovereign Node Mesh
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6 space-y-6 flex-1">
+          <CardContent className="pt-6 space-y-6 flex-1 overflow-hidden">
             <div className="space-y-4">
               {agents?.slice(0, 3).map(agent => (
                 <div key={agent.id} className="p-3 rounded bg-black/40 border border-white/5 space-y-3 group hover:border-primary/30 transition-all">
@@ -179,6 +220,22 @@ export default function Dashboard() {
                   Awaiting Node Sync...
                 </div>
               )}
+            </div>
+
+            {/* Real-time Inference Log Stream */}
+            <div className="space-y-2 mt-2">
+              <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Inference Log Stream</div>
+              <div className="h-32 bg-black/60 rounded border border-white/5 p-2 font-mono text-[9px] overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+                <div className="space-y-1">
+                  {[1,2,3,4,5,6].map(i => (
+                    <div key={i} className="flex gap-2 opacity-60">
+                      <span className="text-primary/60">[INF-{Math.floor(Math.random()*999)}]</span>
+                      <span className="text-white/40 truncate">Propagating weight adjustments to cluster {i}...</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="mt-auto pt-4 border-t border-white/5 grid grid-cols-2 gap-3">

@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Strategy, Backtest } from "@shared/schema";
 import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, TrendingUp, TrendingDown, Clock, Shield, Cpu, Activity, Info, AlertCircle, Play } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, Clock, Shield, Cpu, Activity, Info, AlertCircle, Play, Sparkles } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -211,12 +211,15 @@ export default function StrategyDetails() {
               </div>
 
               <div className="pt-6 border-t border-white/5">
-                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-4">Trade DNA Fingerprints</div>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Trade DNA Cryptography</div>
+                  <Badge variant="outline" className="text-[8px] font-mono uppercase border-emerald-500/30 text-emerald-500">SHA-3_VERIFIED</Badge>
+                </div>
                 <div className="grid grid-cols-4 gap-2">
                   {latestBacktest ? Array.from({ length: 8 }).map((_, i) => {
                     const seed = (latestBacktest.id * (i + 1)) % 100;
                     return (
-                      <div key={i} className="h-10 rounded bg-primary/10 border border-primary/20 relative group overflow-hidden cursor-help">
+                      <div key={i} className="h-12 rounded bg-primary/5 border border-primary/20 relative group overflow-hidden cursor-help hover:bg-primary/10 transition-all">
                         <div 
                           className="absolute inset-0 dna-fingerprint transition-opacity" 
                           style={{ 
@@ -224,17 +227,24 @@ export default function StrategyDetails() {
                             background: `linear-gradient(${seed}deg, hsl(var(--primary)) 0%, transparent 70%)`
                           }} 
                         />
-                        <div className={`absolute top-1 left-1 w-1 h-1 rounded-full ${seed > 30 ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/80 transition-opacity">
-                          <span className="text-[8px] font-mono text-white">#{seed}F</span>
+                        <div className={`absolute top-1 left-1 w-1 h-1 rounded-full ${seed > 30 ? 'bg-emerald-500' : 'bg-rose-500'} shadow-sm shadow-black`} />
+                        <div className="absolute inset-x-0 bottom-0 h-[2px] bg-white/5" />
+                        
+                        {/* Vector Hash Overlay */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 bg-black/90 transition-opacity">
+                          <span className="text-[7px] font-mono text-primary uppercase">v_hash_{seed}</span>
+                          <span className="text-[9px] font-mono text-white font-bold">0x{seed.toString(16).padStart(4, '0')}</span>
                         </div>
                       </div>
                     );
                   }) : (
                     Array.from({ length: 8 }).map(i => (
-                      <div key={i} className="h-10 rounded bg-white/5 border border-dashed border-white/10" />
+                      <div key={i} className="h-12 rounded bg-white/5 border border-dashed border-white/10" />
                     ))
                   )}
+                </div>
+                <div className="mt-3 text-[8px] font-mono text-muted-foreground/40 uppercase tracking-tighter text-center">
+                  Immutable Ledger Hash: bafybeigdyrzt5sfp7udm7hu76uh79...
                 </div>
               </div>
             </CardContent>

@@ -83,6 +83,25 @@
     overflow: hidden;
   }
 
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes scroll-up {
+    from { transform: translateY(0); }
+    to { transform: translateY(-50%); }
+  }
+
+  .animate-scroll-up {
+    animation: scroll-up 10s linear infinite;
+  }
+
   .text-mono {
     font-family: var(--font-mono);
   }
