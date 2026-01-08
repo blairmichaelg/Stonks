@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Strategy, AiAgent, ComplianceLog, SecurityThreat } from "@shared/schema";
@@ -75,173 +75,242 @@ export default function Dashboard() {
       {/* Main Grid */}
       <div className="grid grid-cols-12 gap-6">
         
-        {/* Market Microstructure & Heatmap Placeholder */}
-        <Card className="col-span-12 lg:col-span-8 bg-card/50 border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Activity className="w-5 h-5 text-primary" />
-              Market Microstructure Heatmap
-            </CardTitle>
+        {/* Market Microstructure Heatmap */}
+        <Card className="col-span-12 lg:col-span-8 bg-card/50 border-border/50 shadow-2xl shadow-black/40 overflow-hidden group">
+          <CardHeader className="flex flex-row items-center justify-between pb-4 bg-black/20 border-b border-white/5">
+            <div>
+              <CardTitle className="text-sm font-mono uppercase tracking-[0.2em] text-white flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                Market Microstructure Heatmap
+              </CardTitle>
+              <CardDescription className="text-[10px] text-muted-foreground/50 font-mono mt-1 uppercase tracking-widest">Realtime_Liquidity_Mesh_V3 // Node: MESH-ALPHA-01</CardDescription>
+            </div>
             <div className="flex gap-2">
-              {['1H', '4H', '1D', '1W'].map(t => (
-                <Button key={t} variant="ghost" size="sm" className="h-8 px-2 text-xs">{t}</Button>
-              ))}
+              <Badge variant="outline" className="text-[9px] border-emerald-500/30 text-emerald-500 bg-emerald-500/5 uppercase tracking-tighter shadow-sm shadow-emerald-500/10">RDMA_SYNC</Badge>
+              <Badge variant="outline" className="text-[9px] border-primary/30 text-primary bg-primary/5 uppercase tracking-tighter shadow-sm shadow-primary/10">0.8μs_LATENCY</Badge>
             </div>
           </CardHeader>
-          <CardContent className="p-0 h-[400px] relative overflow-hidden flex items-center justify-center bg-black/20">
-             {/* Mock Heatmap Visualization */}
-             <div className="absolute inset-0 opacity-20 pointer-events-none" 
-                  style={{ backgroundImage: 'radial-gradient(circle at 20% 30%, #3b82f6 0%, transparent 50%), radial-gradient(circle at 80% 70%, #8b5cf6 0%, transparent 50%)' }} 
-             />
-             <div className="text-center z-10 w-full px-12">
-               <div className="flex justify-between items-end mb-8 w-full">
-                 <div className="space-y-1 text-left">
-                   <div className="text-[10px] font-mono text-primary uppercase tracking-tighter opacity-50">Liquidity Velocity</div>
-                   <div className="text-2xl font-bold font-mono text-white">1,429.52</div>
-                 </div>
-                 <div className="h-16 w-32 flex items-end gap-1">
-                   {[40, 70, 45, 90, 65, 80, 50, 85].map((h, i) => (
-                     <div key={i} className="flex-1 bg-primary/40 rounded-t-sm animate-pulse" style={{ height: `${h}%`, animationDelay: `${i * 100}ms` }} />
-                   ))}
-                 </div>
-               </div>
-               <div className="text-muted-foreground text-sm font-mono mb-2 tracking-[0.2em] animate-pulse">HINDSIGHT OVERLAY ACTIVE</div>
-               <div className="flex items-center justify-center gap-4 border-t border-white/5 pt-4">
-                 <div className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Depth: +142.5M</div>
-                 <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">Rejection: 3 Nodes</div>
-               </div>
-             </div>
-             {/* DNA Fingerprints Column */}
-             <div className="absolute right-0 top-0 bottom-0 w-16 border-l border-border/50 bg-background/40 flex flex-col items-center py-4 gap-4 overflow-hidden">
-               {[1,2,3,4,5,6,7,8].map(i => (
-                 <div key={i} className="w-10 h-6 relative group cursor-help shrink-0" title="Trade DNA Fingerprint">
-                   <div className="absolute inset-0 bg-primary/10 rounded-sm border border-primary/20 group-hover:bg-primary/30 transition-colors" />
-                   <div className="dna-fingerprint absolute bottom-1 left-1 right-1" />
-                   <div className="absolute top-1 left-1 w-1 h-1 rounded-full bg-emerald-500" />
-                 </div>
-               ))}
-             </div>
-          </CardContent>
-        </Card>
-
-        {/* AI Agentic Risk Scoring */}
-        <Card className="col-span-12 lg:col-span-4 bg-card/50 border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Cpu className="w-5 h-5 text-primary" />
-              Agentic Mesh Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {agents?.map(agent => (
-              <div key={agent.id} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium text-white">{agent.name}</span>
-                  <span className={`text-xs ${agent.riskScore > 70 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                    Risk: {agent.riskScore}%
-                  </span>
+          <CardContent className="p-6 bg-black/10">
+            <div className="grid grid-cols-12 gap-1 h-[240px]">
+              {Array.from({ length: 60 }).map((_, i) => (
+                <div 
+                  key={i} 
+                  className="aspect-square rounded-[1px] relative overflow-hidden transition-all duration-500 hover:scale-125 hover:z-10 cursor-help border border-white/5 shadow-inner"
+                  style={{ 
+                    backgroundColor: i % 7 === 0 ? 'hsl(var(--primary) / 0.9)' : 
+                                   i % 5 === 0 ? 'hsl(var(--primary) / 0.5)' : 
+                                   i % 3 === 0 ? 'rgba(255,255,255,0.08)' : 'transparent',
+                    animationDelay: `${i * 50}ms`
+                  }}
+                >
+                  <div className="absolute inset-0 dna-fingerprint opacity-30 animate-pulse" />
+                  {i % 8 === 0 && <div className="absolute inset-0 bg-primary/20 animate-pulse" style={{ animationDuration: '3s' }} />}
+                  {i % 12 === 0 && <div className="absolute top-1 left-1 w-1 h-1 rounded-full bg-emerald-500 animate-ping" />}
                 </div>
-                <Progress value={agent.riskScore} className="h-1.5" />
-                <p className="text-xs text-muted-foreground italic">Last Action: {agent.lastAction}</p>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-col md:flex-row justify-between items-center gap-4 px-1">
+              <div className="flex gap-6">
+                <div className="space-y-1">
+                  <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Orderbook Density</div>
+                  <div className="text-sm font-bold text-white font-mono">98.42% <span className="text-emerald-500 text-[10px] ml-1">↑ 1.2%</span></div>
+                </div>
+                <div className="space-y-1 border-l border-white/10 pl-6">
+                  <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Slippage Tolerance</div>
+                  <div className="text-sm font-bold text-white font-mono">0.0024 bps</div>
+                </div>
+                <div className="space-y-1 border-l border-white/10 pl-6">
+                  <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Liquidity Velocity</div>
+                  <div className="text-sm font-bold text-white font-mono">1,429.5 m/s</div>
+                </div>
               </div>
-            )) || (
-              <div className="text-center py-8 text-muted-foreground text-sm">No active agents.</div>
-            )}
+              <div className="h-10 px-4 bg-primary/10 rounded border border-primary/30 flex items-center justify-center group-hover:bg-primary/20 transition-all shadow-lg shadow-primary/10">
+                <span className="text-[10px] font-mono text-primary uppercase animate-pulse tracking-[0.2em] font-bold">Scanning Delta Gradients...</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Security Monitor */}
-        <Card className="col-span-12 md:col-span-6 bg-card/50 border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2 text-rose-500">
-              <Shield className="w-5 h-5" />
-              Zero-Trust Security
+        {/* Agentic Mesh Status */}
+        <Card className="col-span-12 lg:col-span-4 bg-card/50 border-border/50 shadow-2xl shadow-black/40 flex flex-col">
+          <CardHeader className="bg-black/20 border-b border-white/5 pb-4">
+            <CardTitle className="text-sm font-mono uppercase tracking-[0.2em] text-white flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-primary" />
+              Agentic Mesh Cluster
             </CardTitle>
-            <Badge variant="outline" className="border-rose-500/50 text-rose-500">ZTA Active</Badge>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {threats?.map(threat => (
-              <div key={threat.id} className="flex items-center justify-between p-3 rounded bg-black/20 border border-border/30">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
-                  <div>
-                    <div className="text-sm font-medium text-white">{threat.type}</div>
-                    <div className="text-xs text-muted-foreground">{threat.source}</div>
+          <CardContent className="pt-6 space-y-6 flex-1">
+            <div className="space-y-4">
+              {agents?.slice(0, 3).map(agent => (
+                <div key={agent.id} className="p-3 rounded bg-black/40 border border-white/5 space-y-3 group hover:border-primary/30 transition-all">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-mono font-bold text-white tracking-tight">{agent.name}</span>
+                    <Badge variant="outline" className={`text-[9px] px-1.5 py-0 border-none uppercase ${agent.riskScore > 70 ? 'text-rose-400 bg-rose-400/10' : 'text-emerald-400 bg-emerald-400/10'}`}>
+                      {agent.riskScore > 70 ? 'Critical' : 'Nominal'}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[10px] font-mono uppercase text-muted-foreground">
+                      <span>Intelligence Saturation</span>
+                      <span>{agent.riskScore}%</span>
+                    </div>
+                    <div className="h-1 w-full bg-black/60 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-1000 ${agent.riskScore > 70 ? 'bg-rose-500' : 'bg-primary'}`} 
+                        style={{ width: `${agent.riskScore}%` }} 
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground truncate">
+                    <div className="w-1 h-1 rounded-full bg-primary/60 animate-ping" />
+                    <span className="opacity-60">{agent.lastAction}</span>
                   </div>
                 </div>
-                <Badge variant="secondary" className="text-[10px] uppercase">{threat.status}</Badge>
+              )) || (
+                <div className="text-center py-12 text-muted-foreground text-xs font-mono uppercase tracking-widest opacity-20">
+                  <Activity className="w-8 h-8 mx-auto mb-2" />
+                  Awaiting Node Sync...
+                </div>
+              )}
+            </div>
+
+            <div className="mt-auto pt-4 border-t border-white/5 grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <div className="text-[9px] font-mono text-muted-foreground uppercase">Global Inference</div>
+                <div className="text-lg font-bold font-mono text-white tracking-tighter">1.22<span className="text-[10px] text-muted-foreground ml-1">ms</span></div>
               </div>
-            )) || (
-              <div className="flex items-center justify-center h-24 text-muted-foreground text-sm">
-                <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" />
-                Perimeter Secure
+              <div className="space-y-1 border-l border-white/5 pl-3">
+                <div className="text-[9px] font-mono text-muted-foreground uppercase">Active Syncs</div>
+                <div className="text-lg font-bold font-mono text-emerald-500 tracking-tighter">4,092</div>
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Compliance Monitor */}
-        <Card className="col-span-12 md:col-span-6 bg-card/50 border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Info className="w-5 h-5 text-primary" />
-              Regulatory Compliance (DORA)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {compliance?.map(log => (
-              <div key={log.id} className="flex gap-3 border-l-2 border-primary/50 pl-4 py-1">
-                <div className="flex-1">
+        {/* Security & Compliance Grid */}
+        <div className="col-span-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Zero-Trust Security Monitor */}
+          <Card className="bg-card/50 border-border/50 shadow-2xl shadow-black/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 bg-black/20 border-b border-white/5">
+              <div>
+                <CardTitle className="text-xs font-mono uppercase tracking-[0.2em] text-white flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-rose-500" />
+                  Zero-Trust Security Monitor
+                </CardTitle>
+                <CardDescription className="text-[10px] text-muted-foreground/50 font-mono mt-1 uppercase tracking-widest">ZTA_INTEGRITY: 100% // ENCRYPTION: AES-GCM-256</CardDescription>
+              </div>
+              <Badge variant="outline" className="text-[9px] border-rose-500/30 text-rose-500 bg-rose-500/5 uppercase tracking-tighter animate-pulse">Perimeter_Secure</Badge>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-3">
+              {threats?.slice(0, 4).map(threat => (
+                <div key={threat.id} className="flex items-center justify-between p-3 rounded bg-black/40 border border-white/5 group hover:border-rose-500/30 transition-all cursor-default">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+                      <AlertTriangle className="w-4 h-4 text-rose-500" />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-bold text-white uppercase tracking-tight">{threat.type}</div>
+                      <div className="text-[9px] font-mono text-muted-foreground/60">{threat.source}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="secondary" className="text-[8px] uppercase font-mono px-1.5 py-0 bg-white/5 text-white/40">{threat.status}</Badge>
+                    <div className="text-[8px] font-mono text-muted-foreground mt-1 uppercase">0.00ms Isolation</div>
+                  </div>
+                </div>
+              )) || (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground opacity-20">
+                  <Shield className="w-10 h-10 mb-2" />
+                  <p className="text-[10px] font-mono uppercase tracking-widest">Neural Firewall Active</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Compliance & DORA Tracking */}
+          <Card className="bg-card/50 border-border/50 shadow-2xl shadow-black/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 bg-black/20 border-b border-white/5">
+              <div>
+                <CardTitle className="text-xs font-mono uppercase tracking-[0.2em] text-white flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-primary" />
+                  Regulatory Mesh (DORA)
+                </CardTitle>
+                <CardDescription className="text-[10px] text-muted-foreground/50 font-mono mt-1 uppercase tracking-widest">EU_DORA_COMPLIANT // RESILIENCE_SCORE: 99.8</CardDescription>
+              </div>
+              <Badge variant="outline" className="text-[9px] border-primary/30 text-primary bg-primary/5 uppercase tracking-tighter">Class_A_Resilience</Badge>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-4">
+              {compliance?.slice(0, 4).map(log => (
+                <div key={log.id} className="relative pl-4 border-l-2 border-primary/30 group hover:border-primary transition-colors py-1">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-bold text-primary">{log.regulation}</span>
-                    <span className="text-[10px] text-muted-foreground">{new Date(log.timestamp!).toLocaleTimeString()}</span>
+                    <div className="text-[10px] font-bold text-primary uppercase tracking-widest font-mono">{log.regulation}</div>
+                    <div className="text-[9px] font-mono text-muted-foreground">{new Date(log.timestamp!).toLocaleTimeString()}</div>
                   </div>
-                  <p className="text-sm text-white line-clamp-1">{log.message}</p>
+                  <p className="text-[11px] text-white/80 font-medium leading-relaxed truncate">{log.message}</p>
                 </div>
-              </div>
-            )) || (
-              <div className="text-center py-8 text-muted-foreground text-sm italic">
-                Awaiting operational maturity telemetry...
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )) || (
+                <div className="text-center py-12 text-muted-foreground opacity-20">
+                  <div className="text-[10px] font-mono uppercase tracking-widest mb-2 animate-pulse">Awaiting Regulatory Telemetry...</div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Strategies Grid */}
-        <div className="col-span-12 space-y-4">
-          <div className="flex items-center gap-2">
-            <Search className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-xl font-bold text-white">Strategy Portfolio</h2>
+        {/* Strategies Portfolio */}
+        <div className="col-span-12 space-y-4 pt-4">
+          <div className="flex items-center justify-between border-b border-white/5 pb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-primary" />
+              <h2 className="text-sm font-mono font-bold text-white uppercase tracking-[0.3em]">Agentic Strategy Portfolio</h2>
+            </div>
+            <div className="flex items-center gap-4 text-[10px] font-mono text-muted-foreground uppercase">
+              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> All Operational</span>
+              <span>Total AUM: $14.2M</span>
+            </div>
           </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {strategies?.map((strategy) => (
-              <Card key={strategy.id} className="hover-elevate flex flex-col h-full bg-card/30">
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-start">
-                    <span className="truncate">{strategy.name}</span>
-                    <Badge variant="secondary" className="font-mono">{strategy.symbol}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 space-y-4">
-                  <p className="text-sm text-muted-foreground line-clamp-2">{strategy.description}</p>
-                  <div className="flex justify-between items-center text-xs border-t border-border/50 pt-3">
-                    <span className="text-muted-foreground">Regime: <span className="text-white">Trend Following</span></span>
-                    <span className="text-muted-foreground">Confidence: <span className="text-emerald-500 font-bold">89%</span></span>
+              <Card key={strategy.id} className="bg-card/30 border-border/50 shadow-xl shadow-black/20 hover:border-primary/30 transition-all flex flex-col group overflow-hidden relative">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/40 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <CardHeader className="pb-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-primary/5 uppercase tracking-tighter">{strategy.symbol}</Badge>
+                    <div className="flex gap-1">
+                      <div className="w-1 h-3 bg-white/10" />
+                      <div className="w-1 h-4 bg-white/10" />
+                      <div className="w-1 h-2 bg-white/10" />
+                    </div>
                   </div>
-                  <div className="flex gap-2 pt-2">
+                  <CardTitle className="text-base font-bold text-white tracking-tight truncate group-hover:text-primary transition-colors">{strategy.name}</CardTitle>
+                  <CardDescription className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{strategy.description || strategy.nlpInput}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 space-y-5 pt-0">
+                  <div className="grid grid-cols-2 gap-4 border-y border-white/5 py-4">
+                    <div className="space-y-1">
+                      <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Risk Model</div>
+                      <div className="text-[11px] font-mono font-bold text-white uppercase">{strategy.parsedJson?.riskLevel || 'STANDARD'}_CONF</div>
+                    </div>
+                    <div className="space-y-1 text-right">
+                      <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">Edge Confidence</div>
+                      <div className="text-[11px] font-mono font-bold text-emerald-500">89.4%</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 pt-2">
                     <Button 
                       variant="outline" 
-                      className="w-full h-9"
+                      className="flex-1 h-9 text-[10px] font-mono uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 text-white shadow-lg active-elevate-2"
                       onClick={() => setLocation(`/strategy/${strategy.id}`)}
                     >
                       Audit DNA
                     </Button>
                     <Button 
-                      className="w-full h-9"
+                      className="flex-1 h-9 text-[10px] font-mono uppercase tracking-widest bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 active-elevate-2"
                       disabled={runBacktestMutation.isPending}
                       onClick={() => runBacktestMutation.mutate(strategy.id)}
                     >
-                      <Play className="mr-2 h-3 w-3" /> Execute
+                      <Play className="mr-2 h-3 w-3 fill-current" /> Execute
                     </Button>
                   </div>
                 </CardContent>

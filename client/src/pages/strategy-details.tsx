@@ -213,12 +213,28 @@ export default function StrategyDetails() {
               <div className="pt-6 border-t border-white/5">
                 <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-4">Trade DNA Fingerprints</div>
                 <div className="grid grid-cols-4 gap-2">
-                  {[1,2,3,4,5,6,7,8].map(i => (
-                    <div key={i} className="h-8 rounded bg-primary/10 border border-primary/20 relative group overflow-hidden cursor-help">
-                      <div className="absolute inset-0 dna-fingerprint opacity-40 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute top-1 left-1 w-1 h-1 rounded-full bg-emerald-500" />
-                    </div>
-                  ))}
+                  {latestBacktest ? Array.from({ length: 8 }).map((_, i) => {
+                    const seed = (latestBacktest.id * (i + 1)) % 100;
+                    return (
+                      <div key={i} className="h-10 rounded bg-primary/10 border border-primary/20 relative group overflow-hidden cursor-help">
+                        <div 
+                          className="absolute inset-0 dna-fingerprint transition-opacity" 
+                          style={{ 
+                            opacity: seed > 50 ? 0.8 : 0.3,
+                            background: `linear-gradient(${seed}deg, hsl(var(--primary)) 0%, transparent 70%)`
+                          }} 
+                        />
+                        <div className={`absolute top-1 left-1 w-1 h-1 rounded-full ${seed > 30 ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/80 transition-opacity">
+                          <span className="text-[8px] font-mono text-white">#{seed}F</span>
+                        </div>
+                      </div>
+                    );
+                  }) : (
+                    Array.from({ length: 8 }).map(i => (
+                      <div key={i} className="h-10 rounded bg-white/5 border border-dashed border-white/10" />
+                    ))
+                  )}
                 </div>
               </div>
             </CardContent>
